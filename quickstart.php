@@ -14,7 +14,7 @@ function getClient() {
     $client->setAuthConfig('client_secret.json');
     // Set to valid redirect URI for your project.
     $client->setRedirectUri('http://localhost');
-    $client->addScope(Google_Service_YouTube::YOUTUBE_READONLY);
+    $client->addScope([Google_Service_YouTube::YOUTUBE, Google_Service_YouTube::YOUTUBE_UPLOAD]);
     $client->setAccessType('offline');
     // Load previously authorized credentials from a file.
     $credentialsPath = expandHomeDirectory(CREDENTIALS_PATH);
@@ -64,6 +64,7 @@ if (isset($_GET['code'])) {
     $_SESSION['token'] = $client->getAccessToken();
     header('Location: ' . $redirect);
 }
+
 if (isset($_SESSION['token'])) {
     $client->setAccessToken($_SESSION['token']);
 }
@@ -85,4 +86,45 @@ function channelsListByUsername($service, $part, $params) {
         $response['items'][0]['statistics']['viewCount']);
     print $description . "\n";
 }
+
 channelsListByUsername($service, 'snippet,contentDetails,statistics', array('forUsername' => 'GoogleDevelopers'));
+
+
+
+$snippet = new \Google_Service_YouTube_VideoSnippet();
+$snippet->setTitle('test');
+$snippet->setDescription('this is a test');
+
+$status = new \Google_Service_YouTube_VideoStatus();
+$status->privacyStatus = "unlisted";
+
+$video = new \Google_Service_YouTube_Video();
+$video->setSnippet($snippet);
+$video->setStatus($status);
+
+
+$uploaded = $service->videos->insert(
+    "status,snippet",
+    $video,
+    array(
+        'data' => file_get_contents(__DIR__.'/sample.mp4'),
+        'uploadType' => 'media'
+    )
+);
+$resourceId = new \Google_Service_YouTube_ResourceId();
+$resourceId->setVideoId($uploaded->getId());
+$resourceId->setKind('youtube#video');
+
+/*$playlistItemSnippet = new \Google_Service_YouTube_PlaylistItemSnippet();
+$playlistItemSnippet->setTitle('First video in the test playlist');
+
+$playlistItemSnippet->setPlaylistId('test');
+$playlistItemSnippet->setResourceId($resourceId);
+
+$playlistItem = new \Google_Service_YouTube_PlaylistItem();
+$playlistItem->setSnippet($playlistItemSnippet);
+$playlistItemResponse = $service->playlistItems->insert(
+    'snippet,contentDetails', $playlistItem, array()
+);
+*/
+return $uploaded;
