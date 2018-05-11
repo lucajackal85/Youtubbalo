@@ -1,5 +1,6 @@
 {
     "name": "jackal/youtubbalo",
+    "bin": ["bin/youtubbalo-credentials"],
     "license": "proprietary",
     "type": "project",
     "autoload": {

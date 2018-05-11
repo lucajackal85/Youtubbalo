@@ -7,7 +7,6 @@ namespace Jackal\Youtubbalo;
 use Google_Client;
 use Google_Service_YouTube;
 use Jackal\Youtubbalo\Model\Credentials;
-use Jackal\Youtubbalo\Model\Privacy;
 use Jackal\Youtubbalo\Model\Video;
 
 class Uploader
