@@ -19,7 +19,7 @@ class Uploader
         $this->credentials = $credentials;
     }
 
-    public function upload(Video $video,$privacyStatus){
+    public function upload(Video $video,$privacyStatus,$channelId = null,$playlistId = null){
         $client = $this->getClient();
 
         $service = new Google_Service_YouTube($client);
@@ -47,6 +47,14 @@ class Uploader
         $resourceId = new \Google_Service_YouTube_ResourceId();
         $resourceId->setVideoId($uploaded->getId());
         $resourceId->setKind('youtube#video');
+
+        if($channelId) {
+            $resourceId->setChannelId($channelId);
+        }
+
+        if($playlistId){
+            $resourceId->setPlaylistId($playlistId);
+        }
 
         return $uploaded->getId();
     }
