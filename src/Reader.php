@@ -45,6 +45,7 @@ class Reader extends BaseYoutubeApi
 
             $cacheItem->set($out);
             $cacheItem->expiresAfter($cacheTTL);
+            $this->cacheAdapter->save($cacheItem);
         }
 
         return $cacheItem->get();
