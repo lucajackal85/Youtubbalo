@@ -10,15 +10,16 @@ class Reader extends BaseYoutubeApi
     /**
      * @param $playlistId
      * @param int $maxResult
-     * @return array
+     * @param int $cacheTTL
+     * @return mixed
      */
     public function getVideoFromPlaylist($playlistId,$maxResult = 25,$cacheTTL = 3600){
 
-        $cacheKey = 'youtubbalo.playlist_'.$playlistId;
+        $cacheKey = 'youtubbalo.playlist_'.$maxResult.'_'.$playlistId;
 
-        $cache = new FilesystemCache();
+        $cacheItem = $this->cacheAdapter->getItem($cacheKey);
 
-        if(!$cache->has($cacheKey)) {
+        if(!$cacheItem->isHit()) {
             $service = $this->getService();
 
             $response = $service->playlistItems->listPlaylistItems('snippet,contentDetails', [
@@ -42,11 +43,10 @@ class Reader extends BaseYoutubeApi
                 ];
             }
 
-            $cache->set($cacheKey,$out,$cacheTTL);
+            $cacheItem->set($out);
+            $cacheItem->expiresAfter($cacheTTL);
         }
 
-
-
-        return $cache->get($cacheKey);
+        return $cacheItem->get();
     }
 }

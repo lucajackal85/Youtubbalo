@@ -1,22 +1,28 @@
 <?php
 
-
 namespace Jackal\Youtubbalo;
-
 
 use Google_Client;
 use Google_Service_YouTube;
 use Jackal\Youtubbalo\Model\Credentials;
-use Jackal\Youtubbalo\Model\Video;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 
 abstract class BaseYoutubeApi
 {
+    /**
+     * @var Credentials
+     */
     protected $credentials;
 
-    public function __construct(Credentials $credentials)
+    /**
+     * @var AdapterInterface
+     */
+    protected $cacheAdapter;
+
+    public function __construct(Credentials $credentials,AdapterInterface $cacheAdapter)
     {
-        // client_secret.json
         $this->credentials = $credentials;
+        $this->cacheAdapter = $cacheAdapter;
     }
 
     protected function getService() {
