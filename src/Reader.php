@@ -39,7 +39,9 @@ class Reader extends BaseYoutubeApi
                     'published_at' => new \DateTime($snippet->getPublishedAt()),
                     'playlist_id' => $snippet->getPlaylistId(),
                     'channel_id' => $snippet->getChannelId(),
-                    'channel_title' => $snippet->getChannelTitle()
+                    'channel_title' => $snippet->getChannelTitle(),
+                    'result_no' => $snippet->position,
+                    'total_results' => $response->pageInfo->totalResults
                 ];
             }
 
