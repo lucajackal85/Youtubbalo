@@ -23,12 +23,25 @@ class Reader extends BaseYoutubeApi
             $service = $this->getService();
 
             $response = $service->playlistItems->listPlaylistItems('snippet,contentDetails', [
-                'maxResults' => $maxResult,
-                'playlistId' => $playlistId
+                'maxResults' => min(50,$maxResult),
+                'playlistId' => $playlistId,
             ]);
+            $resultsArray = $response->getItems();
+
+
+            if($maxResult > 50){
+                while(count($resultsArray) < $response->pageInfo->totalResults){
+                    $response = $service->playlistItems->listPlaylistItems('snippet,contentDetails', [
+                        'maxResults' => min(50,$maxResult),
+                        'playlistId' => $playlistId,
+                        'pageToken' => $response->getNextPageToken()
+                    ]);
+                    $resultsArray = array_merge($resultsArray,$response->getItems());
+                }
+            }
 
             $out = [];
-            foreach ($response->getItems() as $item) {
+            foreach ($resultsArray as $item) {
                 /** @var \Google_Service_YouTube_PlaylistItemSnippet $snippet */
                 $snippet = $item->getSnippet();
 
