@@ -15,6 +15,8 @@ class Reader extends BaseYoutubeApi
      */
     public function getVideoFromPlaylist($playlistId,$maxResult = 25,$cacheTTL = 3600){
 
+        $youtubeMaxResult = 50;
+
         $cacheKey = 'youtubbalo.playlist_'.$maxResult.'_'.$playlistId;
 
         $cacheItem = $this->cacheAdapter->getItem($cacheKey);
@@ -22,17 +24,21 @@ class Reader extends BaseYoutubeApi
         if(!$cacheItem->isHit()) {
             $service = $this->getService();
 
+            $maxResultOriginal = $maxResult;
+
             $response = $service->playlistItems->listPlaylistItems('snippet,contentDetails', [
-                'maxResults' => min(50,$maxResult),
+                'maxResults' => min($youtubeMaxResult,$maxResult),
                 'playlistId' => $playlistId,
             ]);
             $resultsArray = $response->getItems();
 
 
-            if($maxResult > 50){
-                while(count($resultsArray) < $response->pageInfo->totalResults){
+            if($maxResult > $youtubeMaxResult){
+                while(count($resultsArray) < min($maxResultOriginal,$response->pageInfo->totalResults)){
+                    $maxResult-=$youtubeMaxResult;
+                    echo $maxResult."\n";
                     $response = $service->playlistItems->listPlaylistItems('snippet,contentDetails', [
-                        'maxResults' => min(50,$maxResult),
+                        'maxResults' => min($youtubeMaxResult,$maxResult),
                         'playlistId' => $playlistId,
                         'pageToken' => $response->getNextPageToken()
                     ]);
