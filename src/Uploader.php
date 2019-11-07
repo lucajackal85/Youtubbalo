@@ -7,8 +7,8 @@ use Jackal\Youtubbalo\Model\Video;
 
 class Uploader extends BaseYoutubeApi
 {
-
-    public function upload(Video $video,$privacyStatus,$channelId = null,$playlistId = null){
+    public function upload(Video $video, $privacyStatus, $channelId = null, $playlistId = null)
+    {
         $service = $this->getService();
 
         $snippet = new \Google_Service_YouTube_VideoSnippet();
@@ -35,7 +35,7 @@ class Uploader extends BaseYoutubeApi
         $resourceId->setVideoId($uploaded->getId());
         $resourceId->setKind('youtube#video');
 
-        if($channelId) {
+        if ($channelId) {
             $resourceId->setChannelId($channelId);
         }
 

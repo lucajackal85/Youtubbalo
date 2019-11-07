@@ -1,5 +1,6 @@
 .idea/
 vendor/
-php-yt-oauth2.json
-client_secret.json
+credentials/
+bin/
+!bin/youtubbalo-credentials
 

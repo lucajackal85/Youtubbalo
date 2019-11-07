@@ -6,43 +6,31 @@ use Symfony\Component\Cache\Simple\FilesystemCache;
 
 class Reader extends BaseYoutubeApi
 {
-
+    const YOUTUBE_MAX_RESULTS = 50;
     /**
      * @param $playlistId
      * @param int $maxResult
      * @param int $cacheTTL
      * @return mixed
+     * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function getVideoFromPlaylist($playlistId,$maxResult = 25,$cacheTTL = 3600){
-
-        $youtubeMaxResult = 50;
-
+    public function getVideoFromPlaylist($playlistId, $maxResult = 25, $cacheTTL = 3600)
+    {
         $cacheKey = 'youtubbalo.playlist_'.$maxResult.'_'.$playlistId;
 
         $cacheItem = $this->cacheAdapter->getItem($cacheKey);
+        $cacheItem->expiresAfter($cacheTTL);
 
-        if(!$cacheItem->isHit()) {
-            $service = $this->getService();
-
+        if (!$cacheItem->isHit()) {
             $maxResultOriginal = $maxResult;
-
-            $response = $service->playlistItems->listPlaylistItems('snippet,contentDetails', [
-                'maxResults' => min($youtubeMaxResult,$maxResult),
-                'playlistId' => $playlistId,
-            ]);
+            $response = $this->doRequest($playlistId, min(self::YOUTUBE_MAX_RESULTS, $maxResult));
             $resultsArray = $response->getItems();
 
-
-            if($maxResult > $youtubeMaxResult){
-                while(count($resultsArray) < min($maxResultOriginal,$response->pageInfo->totalResults)){
-                    $maxResult-=$youtubeMaxResult;
-                    echo $maxResult."\n";
-                    $response = $service->playlistItems->listPlaylistItems('snippet,contentDetails', [
-                        'maxResults' => min($youtubeMaxResult,$maxResult),
-                        'playlistId' => $playlistId,
-                        'pageToken' => $response->getNextPageToken()
-                    ]);
-                    $resultsArray = array_merge($resultsArray,$response->getItems());
+            if ($maxResult > self::YOUTUBE_MAX_RESULTS) {
+                while (count($resultsArray) < min($maxResultOriginal, $response->pageInfo->totalResults)) {
+                    $maxResult-=self::YOUTUBE_MAX_RESULTS;
+                    $response = $this->doRequest($playlistId, min(self::YOUTUBE_MAX_RESULTS, $maxResult), $response->getNextPageToken());
+                    $resultsArray = array_merge($resultsArray, $response->getItems());
                 }
             }
 
@@ -64,11 +52,28 @@ class Reader extends BaseYoutubeApi
                 ];
             }
 
-            $cacheItem->set($out);
-            $cacheItem->expiresAfter($cacheTTL);
-            $this->cacheAdapter->save($cacheItem);
+            $this->cacheAdapter->save($cacheItem->set($out));
         }
 
         return $cacheItem->get();
+    }
+
+    private function doRequest($playlistId, $maxResults, $pageToken = null)
+    {
+        $params = [
+            'maxResults' => $maxResults,
+            'playlistId' => $playlistId,
+        ];
+
+        if ($pageToken) {
+            $params['pageToken'] = $pageToken;
+        }
+
+        return $this->getService()->playlistItems->listPlaylistItems('snippet,contentDetails', $params);
+    }
+
+    public function clearVideoPlaylistCache()
+    {
+        $this->cacheAdapter->clear();
     }
 }

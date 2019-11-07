@@ -3,7 +3,6 @@
 
 namespace Jackal\Youtubbalo\Model;
 
-
 final class Privacy
 {
     const UNLISTED_VIDEO = 'unlisted';

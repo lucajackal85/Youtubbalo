@@ -19,13 +19,14 @@ abstract class BaseYoutubeApi
      */
     protected $cacheAdapter;
 
-    public function __construct(Credentials $credentials,AdapterInterface $cacheAdapter)
+    public function __construct(Credentials $credentials, AdapterInterface $cacheAdapter)
     {
         $this->credentials = $credentials;
         $this->cacheAdapter = $cacheAdapter;
     }
 
-    protected function getService() {
+    protected function getService()
+    {
         $client = new Google_Client();
         $client->setAuthConfig($this->credentials->getClientSecret()->getPathname());
         // Set to valid redirect URI for your project.
@@ -34,7 +35,7 @@ abstract class BaseYoutubeApi
         $client->setAccessType('offline');
 
 
-        $accessToken = json_decode(file_get_contents($this->credentials->getOauth2()->getPathname()),true);
+        $accessToken = json_decode(file_get_contents($this->credentials->getOauth2()->getPathname()), true);
 
 
         $client->setAccessToken($accessToken);

@@ -3,7 +3,6 @@
 
 namespace Jackal\Youtubbalo\Model;
 
-
 class Video
 {
     private $title;
@@ -12,7 +11,7 @@ class Video
 
     private $file;
 
-    function __construct($file,$title,$description)
+    public function __construct($file, $title, $description)
     {
         $this->file = new \SplFileObject($file);
         $this->title = $title;

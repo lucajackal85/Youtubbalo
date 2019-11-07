@@ -3,7 +3,6 @@
 
 namespace Jackal\Youtubbalo\Model;
 
-
 class Credentials
 {
     /**
@@ -38,13 +37,11 @@ class Credentials
         return $this->oauth2Pathname;
     }
 
-    public function getOauth2Expiration(){
-
-        $content = json_decode($this->getOauth2()->fread($this->getOauth2()->getSize()),true);
+    public function getOauth2Expiration()
+    {
+        $content = json_decode($this->getOauth2()->fread($this->getOauth2()->getSize()), true);
 
 
         return ($content['created'] + ($content['expires_in'] - 30)) - time();
     }
-
-
 }

@@ -3,7 +3,6 @@
 
 namespace Jackal\Youtubbalo\Command;
 
-
 use Google_Client;
 use Google_Service_YouTube;
 use Symfony\Component\Console\Command\Command;
@@ -18,20 +17,20 @@ class CredentialCommand extends Command
     protected function configure()
     {
         $this->setName('jackal:youtubbalo:create-credential')
-            ->addArgument('client-secret',InputArgument::REQUIRED)
-            ->addArgument('oauth2',InputArgument::OPTIONAL);
+            ->addArgument('client-secret', InputArgument::REQUIRED)
+            ->addArgument('oauth2', InputArgument::OPTIONAL);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $credentialsPath = $input->getArgument('client-secret');
 
-        if(!file_exists($credentialsPath)){
+        if (!file_exists($credentialsPath)) {
             throw new \RuntimeException('File '.$credentialsPath.' not found');
         }
 
         $oauth2Path = null;
-        if($input->getArgument('oauth2')) {
+        if ($input->getArgument('oauth2')) {
             $oauth2Path = $input->getArgument('oauth2').$this->oauth2Filename;
         }
 
@@ -51,16 +50,13 @@ class CredentialCommand extends Command
         // Exchange authorization code for an access token.
         $accessToken = $client->fetchAccessTokenWithAuthCode($authCode);
 
-        if($oauth2Path) {
+        if ($oauth2Path) {
             file_put_contents($oauth2Path, json_encode($accessToken));
             $output->writeln("Credentials saved to %s\n", realpath($oauth2Path));
-        }else{
+        } else {
             $output->writeln('######################################################');
             $output->writeln(json_encode($accessToken));
             $output->writeln('######################################################');
         }
-
     }
-
-
 }
