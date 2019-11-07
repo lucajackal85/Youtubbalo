@@ -2,6 +2,7 @@
 
 namespace Jackal\Youtubbalo;
 
+use Jackal\Youtubbalo\Model\ReaderSearchOption;
 use Symfony\Component\Cache\Simple\FilesystemCache;
 
 class Reader extends BaseYoutubeApi
@@ -14,9 +15,13 @@ class Reader extends BaseYoutubeApi
      * @return mixed
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function getVideoFromPlaylist($playlistId, $maxResult = 25, $cacheTTL = 3600)
+    public function getVideoFromPlaylist(ReaderSearchOption $readerSearchOption, $cacheTTL = 3600)
     {
-        $cacheKey = 'youtubbalo.playlist_'.$maxResult.'_'.$playlistId;
+        $maxResult = $readerSearchOption->getMaxResults();
+        $playlistId = $readerSearchOption->getPlaylistId();
+        $order = $readerSearchOption->getOrder();
+
+        $cacheKey = 'youtubbalo.playlist_'.$maxResult.'_'.$playlistId.'_'.md5(json_encode($order));
 
         $cacheItem = $this->cacheAdapter->getItem($cacheKey);
         $cacheItem->expiresAfter($cacheTTL);
@@ -50,6 +55,21 @@ class Reader extends BaseYoutubeApi
                     'result_no' => $snippet->position,
                     'total_results' => $response->pageInfo->totalResults
                 ];
+            }
+
+            if($order){
+                uasort($out,function($a,$b) use ($order){
+
+                    $aField = $a[$order['field']];
+                    $bField = $b[$order['field']];
+
+                    if($order['direction'] == 'desc'){
+                        return (($aField < $bField) ? 1: -1);
+                    }else {
+                        return (($aField < $bField) ? -1 : 1);
+                    }
+                });
+                $out = array_values($out);
             }
 
             $this->cacheAdapter->save($cacheItem->set($out));
